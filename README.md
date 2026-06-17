@@ -1,2 +1,7 @@
 # Machine-Mov
-The communication between software and hardware fascinate me. 
+-
+### Firmware
+-
+The communication between software and hardware. 
+-
+![Chip](kernel/chip.jpeg)
