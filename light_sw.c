@@ -1,6 +1,4 @@
-/*
- * Control LED - Traffic Light Sequence
- */
+//Control LED - Traffic Light Sequence
 #include <iso646.h>
 #include <stdint.h>
 #include <stdckdint.h>
@@ -30,7 +28,7 @@ void delay(uint32_t cycles)
     }
 }
 
-/* Helper to set a specific LED without affecting others */
+//Helper to set a specific LED without affecting others
 void set_led(uint32_t led_mask)
 {
     GPIO_PORT = led_mask; 
@@ -48,14 +46,11 @@ int main(void)
 
     while (1)
     {
-        
         GPIO_PORT = PIN_RED_LED;       /* Clears others, sets Red */
         delay(DELAY_CYCLES);
 
-        
         GPIO_PORT = PIN_GREEN_LED;     /* Clears others, sets Green */
         delay(DELAY_CYCLES);
-
        
         GPIO_PORT = PIN_YELLOW_LED;    /* Clears others, sets Yellow */
         delay(DELAY_CYCLES);
