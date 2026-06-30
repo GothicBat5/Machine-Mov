@@ -2,8 +2,6 @@
 .cpu cortex-m3
 .thumb
 
-    /* --- Hardware Definitions (Memory Mapped Addresses) --- */
-    /* These addresses are examples. You must match them to your specific chip (e.g., STM32, LPC, NXP) */
     .equ RCC_APB2ENR,     0x40021018  /* Clock Enable Register (Example) */
     .equ GPIOA_MODER,     0x40020000  /* Mode Register (Input/Output) */
     .equ GPIOA_ODR,       0x40020014  /* Output Data Register (The lights) */
@@ -14,7 +12,6 @@
     .equ LIGHT_YELLOW,    0x02
     .equ LIGHT_GREEN,     0x04
 
-    /* --- Timing Constants (Approximate for a 10MHz clock) --- */
     /* Adjust these based on your actual CPU frequency */
     .equ DELAY_RED_MS, 5000        /* 5 seconds */
     .equ DELAY_GREEN_MS, 5000        /* 5 seconds */
