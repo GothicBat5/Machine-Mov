@@ -80,8 +80,8 @@ static int soundcore_open(struct inode *, struct file *);
 static const struct file_operations soundcore_fops =
 {
 	/* We must have an owner or the module locking fails */
-	.owner	= THIS_MODULE,
-	.open	= soundcore_open,
+	.owner = THIS_MODULE,
+	.open = soundcore_open,
 	.llseek = noop_llseek,
 };
 
@@ -89,25 +89,25 @@ static int __sound_insert_unit(struct sound_unit * s, struct sound_unit **list, 
 {
 	int n=low;
 
-	if (index < 0) {	/* first free */
-
+	if (index < 0) 
+	{
 		while (*list && (*list)->unit_minor<n)
 			list=&((*list)->next);
 
 		while(n<top)
 		{
-			/* Found a hole ? */
-			if(*list==NULL || (*list)->unit_minor>n)
-				break;
+			if(*list==NULL || (*list)->unit_minor>n) break;
 			list=&((*list)->next);
 			n+=SOUND_STEP;
 		}
 
 		if(n>=top)
 			return -ENOENT;
-	} else {
+	} 
+	else {
 		n = low+(index*16);
-		while (*list) {
+		while (*list) 
+		{
 			if ((*list)->unit_minor==n)
 				return -EBUSY;
 			if ((*list)->unit_minor>n)
@@ -193,12 +193,6 @@ fail:
 	kfree(s);
 	return r;
 }
-
-/*
- *	Remove a unit. Acquires locks as needed. The drivers MUST have
- *	completed the removal before their file operations become
- *	invalid.
- */
  	
 static void sound_remove_unit(struct sound_unit **list, int unit)
 {
@@ -217,7 +211,6 @@ static void sound_remove_unit(struct sound_unit **list, int unit)
 }
 /*
  *	Allocations
- *
  *	0	*16		Mixers
  *	1	*8		Sequencers
  *	2	*16		Midi
@@ -245,7 +238,8 @@ int register_sound_special_device(const struct file_operations *fops, int unit, 
 	const char *name;
 	char _name[16];
 
-	switch (chain) {
+	switch (chain) 
+	{
 	    case 0:
 		name = "mixer";
 		break;
@@ -311,18 +305,6 @@ int register_sound_special(const struct file_operations *fops, int unit)
 
 EXPORT_SYMBOL(register_sound_special);
 
-/**
- *	register_sound_mixer - register a mixer device
- *	@fops: File operations for the driver
- *	@dev: Unit number to allocate
- *
- *	Allocate a mixer device. Unit is the number of the mixer requested.
- *	Pass -1 to request the next free mixer unit.
- *
- *	Return: On success, the allocated number is returned. On failure,
- *	a negative error code is returned.
- */
-
 int register_sound_mixer(const struct file_operations *fops, int dev)
 {
 	return sound_insert_unit(&chains[0], fops, dev, 0, 128,
@@ -331,25 +313,6 @@ int register_sound_mixer(const struct file_operations *fops, int dev)
 
 EXPORT_SYMBOL(register_sound_mixer);
 
-/*
- *	DSP's are registered as a triple. Register only one and cheat
- *	in open - see below.
- */
- 
-/**
- *	register_sound_dsp - register a DSP device
- *	@fops: File operations for the driver
- *	@dev: Unit number to allocate
- *
- *	Allocate a DSP device. Unit is the number of the DSP requested.
- *	Pass -1 to request the next free DSP unit.
- *
- *	This function allocates both the audio and dsp device entries together
- *	and will always allocate them as a matching pair - eg dsp3/audio3
- *
- *	Return: On success, the allocated number is returned. On failure,
- *	a negative error code is returned.
- */
 
 int register_sound_dsp(const struct file_operations *fops, int dev)
 {
@@ -359,14 +322,6 @@ int register_sound_dsp(const struct file_operations *fops, int dev)
 
 EXPORT_SYMBOL(register_sound_dsp);
 
-/**
- *	unregister_sound_special - unregister a special sound device
- *	@unit: unit number to allocate
- *
- *	Release a sound device that was allocated with
- *	register_sound_special(). The unit passed is the return value from
- *	the register function.
- */
 
 
 void unregister_sound_special(int unit)
@@ -376,30 +331,12 @@ void unregister_sound_special(int unit)
  
 EXPORT_SYMBOL(unregister_sound_special);
 
-/**
- *	unregister_sound_mixer - unregister a mixer
- *	@unit: unit number to allocate
- *
- *	Release a sound device that was allocated with register_sound_mixer().
- *	The unit passed is the return value from the register function.
- */
-
 void unregister_sound_mixer(int unit)
 {
 	sound_remove_unit(&chains[0], unit);
 }
 
 EXPORT_SYMBOL(unregister_sound_mixer);
-
-/**
- *	unregister_sound_dsp - unregister a DSP device
- *	@unit: unit number to allocate
- *
- *	Release a sound device that was allocated with register_sound_dsp().
- *	The unit passed is the return value from the register function.
- *
- *	Both of the allocated units are released together automatically.
- */
 
 void unregister_sound_dsp(int unit)
 {
