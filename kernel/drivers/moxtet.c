@@ -17,13 +17,13 @@ static const struct
 	int nirqs;
 	const char *desc;
 } mox_module_table[] = {
-	{ NULL,		 0,			0, NULL },
-	{ "sfp",	-1,			0, "MOX D (SFP cage)" },
-	{ "pci",	MOXTET_IRQ_PCI,		1, "MOX B (Mini-PCIe)" },
-	{ "topaz",	MOXTET_IRQ_TOPAZ,	1, "MOX C (4 port switch)" },
-	{ "peridot",	MOXTET_IRQ_PERIDOT(0),	1, "MOX E (8 port switch)" },
-	{ "usb3",	MOXTET_IRQ_USB3,	2, "MOX F (USB 3.0)" },
-	{ "pci-bridge",	-1,			0, "MOX G (Mini-PCIe bridge)" },
+	{ NULL,	 0,	0, NULL },
+	{ "sfp", -1, 0, "MOX D (SFP cage)" },
+	{ "pci", MOXTET_IRQ_PCI, 1, "MOX B (Mini-PCIe)" },
+	{ "topaz", MOXTET_IRQ_TOPAZ, 1, "MOX C (4 port switch)" },
+	{ "peridot", MOXTET_IRQ_PERIDOT(0),	1, "MOX E (8 port switch)" },
+	{ "usb3", MOXTET_IRQ_USB3, 2, "MOX F (USB 3.0)" },
+	{ "pci-bridge",	-1, 0, "MOX G (Mini-PCIe bridge)" },
 };
 
 static inline bool mox_module_known(unsigned int id)
@@ -49,9 +49,7 @@ static DEVICE_ATTR_RO(module_##name)
 
 DEF_MODULE_ATTR(id, "0x%x\n", mdev->id);
 DEF_MODULE_ATTR(name, "%s\n", mox_module_name(mdev->id));
-DEF_MODULE_ATTR(description, "%s\n",
-		mox_module_known(mdev->id) ? mox_module_table[mdev->id].desc
-					   : "");
+DEF_MODULE_ATTR(description, "%s\n", mox_module_known(mdev->id) ? mox_module_table[mdev->id].desc : "");
 
 static struct attribute *moxtet_dev_attrs[] = {
 	&dev_attr_module_id.attr,
@@ -89,18 +87,18 @@ static int moxtet_match(struct device *dev, const struct device_driver *drv)
 }
 
 static const struct bus_type moxtet_bus_type = {
-	.name		= "moxtet",
+	.name = "moxtet",
 	.dev_groups	= moxtet_dev_groups,
-	.match		= moxtet_match,
+	.match = moxtet_match,
 };
 
-int __moxtet_register_driver(struct module *owner,
-			     struct moxtet_driver *mdrv)
+int __moxtet_register_driver(struct module *owner, struct moxtet_driver *mdrv)
 {
 	mdrv->driver.owner = owner;
 	mdrv->driver.bus = &moxtet_bus_type;
 	return driver_register(&mdrv->driver);
 }
+
 EXPORT_SYMBOL_GPL(__moxtet_register_driver);
 
 static int moxtet_dev_check(struct device *dev, void *data)
@@ -154,8 +152,7 @@ static int moxtet_add_device(struct moxtet_device *dev)
 	if (dev->idx >= TURRIS_MOX_MAX_MODULES || dev->id > 0xf)
 		return -EINVAL;
 
-	dev_set_name(&dev->dev, "moxtet-%s.%u", mox_module_name(dev->id),
-		     dev->idx);
+	dev_set_name(&dev->dev, "moxtet-%s.%u", mox_module_name(dev->id), dev->idx);
 
 	mutex_lock(&add_mutex);
 
@@ -194,14 +191,16 @@ of_register_moxtet_device(struct moxtet *moxtet, struct device_node *nc)
 	int ret;
 
 	dev = moxtet_alloc_device(moxtet);
-	if (!dev) {
+	if (!dev) 
+	{
 		dev_err(moxtet->dev,
 			"Moxtet device alloc error for %pOF\n", nc);
 		return ERR_PTR(-ENOMEM);
 	}
 
 	ret = of_property_read_u32(nc, "reg", &val);
-	if (ret) {
+	if (ret) 
+	{
 		dev_err(moxtet->dev, "%pOF has no valid 'reg' property (%d)\n",
 			nc, ret);
 		goto err_put;
@@ -209,7 +208,8 @@ of_register_moxtet_device(struct moxtet *moxtet, struct device_node *nc)
 
 	dev->idx = val;
 
-	if (dev->idx >= TURRIS_MOX_MAX_MODULES) {
+	if (dev->idx >= TURRIS_MOX_MAX_MODULES) 
+	{
 		dev_err(moxtet->dev, "%pOF Moxtet address 0x%x out of range\n",
 			nc, dev->idx);
 		ret = -EINVAL;
@@ -218,7 +218,8 @@ of_register_moxtet_device(struct moxtet *moxtet, struct device_node *nc)
 
 	dev->id = moxtet->modules[dev->idx];
 
-	if (!dev->id) {
+	if (!dev->id) 
+	{
 		dev_err(moxtet->dev, "%pOF Moxtet address 0x%x is empty\n", nc,
 			dev->idx);
 		ret = -ENODEV;
@@ -229,7 +230,8 @@ of_register_moxtet_device(struct moxtet *moxtet, struct device_node *nc)
 	dev->dev.of_node = nc;
 
 	ret = moxtet_add_device(dev);
-	if (ret) {
+	if (ret) 
+	{
 		dev_err(moxtet->dev,
 			"Moxtet device register error for %pOF\n", nc);
 		of_node_put(nc);
@@ -251,11 +253,13 @@ static void of_register_moxtet_devices(struct moxtet *moxtet)
 	if (!moxtet->dev->of_node)
 		return;
 
-	for_each_available_child_of_node(moxtet->dev->of_node, nc) {
+	for_each_available_child_of_node(moxtet->dev->of_node, nc) 
+	{
 		if (of_node_test_and_set_flag(nc, OF_POPULATED))
 			continue;
 		dev = of_register_moxtet_device(moxtet, nc);
-		if (IS_ERR(dev)) {
+		if (IS_ERR(dev)) 
+		{
 			dev_warn(moxtet->dev,
 				 "Failed to create Moxtet device for %pOF\n",
 				 nc);
@@ -270,11 +274,12 @@ moxtet_register_devices_from_topology(struct moxtet *moxtet)
 	struct moxtet_device *dev;
 	int i, ret;
 
-	for (i = 0; i < moxtet->count; ++i) {
+	for (i = 0; i < moxtet->count; ++i) 
+	{
 		dev = moxtet_alloc_device(moxtet);
-		if (!dev) {
-			dev_err(moxtet->dev, "Moxtet device %u alloc error\n",
-				i);
+		if (!dev) 
+		{
+			dev_err(moxtet->dev, "Moxtet device %u alloc error\n", i);
 			continue;
 		}
 
@@ -282,7 +287,8 @@ moxtet_register_devices_from_topology(struct moxtet *moxtet)
 		dev->id = moxtet->modules[i];
 
 		ret = moxtet_add_device(dev);
-		if (ret && ret != -EBUSY) {
+		if (ret && ret != -EBUSY) 
+		{
 			put_device(&dev->dev);
 			dev_err(moxtet->dev,
 				"Moxtet device %u register error: %i\n", i,
@@ -299,13 +305,13 @@ static int moxtet_set_irq(struct moxtet *moxtet, int idx, int id, int nsame)
 	int i, first;
 	struct moxtet_irqpos *pos;
 
-	first = mox_module_table[id].hwirq_base +
-		nsame * mox_module_table[id].nirqs;
+	first = mox_module_table[id].hwirq_base + nsame * mox_module_table[id].nirqs;
 
 	if (first + mox_module_table[id].nirqs > MOXTET_NIRQS)
 		return -EINVAL;
 
-	for (i = 0; i < mox_module_table[id].nirqs; ++i) {
+	for (i = 0; i < mox_module_table[id].nirqs; ++i) 
+	{
 		pos = &moxtet->irq.position[first + i];
 		pos->idx = idx;
 		pos->bit = i;
@@ -327,11 +333,15 @@ static int moxtet_find_topology(struct moxtet *moxtet)
 	if (ret < 0)
 		return ret;
 
-	if (buf[0] == TURRIS_MOX_CPU_ID_EMMC) {
+	if (buf[0] == TURRIS_MOX_CPU_ID_EMMC) 
+	{
 		dev_info(moxtet->dev, "Found MOX A (eMMC CPU) module\n");
-	} else if (buf[0] == TURRIS_MOX_CPU_ID_SD) {
+	} 
+	else if (buf[0] == TURRIS_MOX_CPU_ID_SD) 
+	{
 		dev_info(moxtet->dev, "Found MOX A (CPU) module\n");
-	} else {
+	} 
+	else {
 		dev_err(moxtet->dev, "Invalid Turris MOX A CPU module 0x%02x\n",
 			buf[0]);
 		return -ENODEV;
@@ -339,7 +349,8 @@ static int moxtet_find_topology(struct moxtet *moxtet)
 
 	moxtet->count = 0;
 
-	for (i = 1; i < TURRIS_MOX_MAX_MODULES; ++i) {
+	for (i = 1; i < TURRIS_MOX_MAX_MODULES; ++i) 
+	{
 		int id;
 
 		if (buf[i] == 0xff)
@@ -350,7 +361,8 @@ static int moxtet_find_topology(struct moxtet *moxtet)
 		moxtet->modules[i-1] = id;
 		++moxtet->count;
 
-		if (mox_module_known(id)) {
+		if (mox_module_known(id)) 
+		{
 			dev_info(moxtet->dev, "Found %s module\n",
 				 mox_module_table[id].desc);
 
@@ -358,7 +370,8 @@ static int moxtet_find_topology(struct moxtet *moxtet)
 				dev_err(moxtet->dev,
 					"  Cannot set IRQ for module %s\n",
 					mox_module_table[id].desc);
-		} else {
+		} 
+		else {
 			dev_warn(moxtet->dev,
 				 "Unknown Moxtet module found (ID 0x%02x)\n",
 				 id);
@@ -467,9 +480,9 @@ static ssize_t input_read(struct file *file, char __user *buf, size_t len,
 }
 
 static const struct file_operations input_fops = {
-	.owner	= THIS_MODULE,
-	.open	= moxtet_debug_open,
-	.read	= input_read,
+	.owner = THIS_MODULE,
+	.open = moxtet_debug_open,
+	.read = input_read,
 };
 
 static ssize_t output_read(struct file *file, char __user *buf, size_t len,
@@ -666,7 +679,8 @@ static int moxtet_irq_read(struct moxtet *moxtet, unsigned long *map)
 
 	*map = 0;
 
-	for_each_set_bit(i, &moxtet->irq.exists, MOXTET_NIRQS) {
+	for_each_set_bit(i, &moxtet->irq.exists, MOXTET_NIRQS) 
+	{
 		if (!(buf[pos[i].idx + 1] & BIT(4 + pos[i].bit)))
 			set_bit(i, map);
 	}
@@ -687,7 +701,8 @@ static irqreturn_t moxtet_irq_thread_fn(int irq, void *data)
 	set &= ~moxtet->irq.masked;
 
 	do {
-		for_each_set_bit(i, &set, MOXTET_NIRQS) {
+		for_each_set_bit(i, &set, MOXTET_NIRQS) 
+		{
 			sub_irq = irq_find_mapping(moxtet->irq.domain, i);
 			handle_nested_irq(sub_irq);
 			dev_dbg(moxtet->dev, "%i irq\n", i);
@@ -709,8 +724,10 @@ static void moxtet_irq_free(struct moxtet *moxtet)
 {
 	int i, irq;
 
-	for (i = 0; i < MOXTET_NIRQS; ++i) {
-		if (moxtet->irq.exists & BIT(i)) {
+	for (i = 0; i < MOXTET_NIRQS; ++i) 
+	{
+		if (moxtet->irq.exists & BIT(i)) 
+		{
 			irq = irq_find_mapping(moxtet->irq.domain, i);
 			irq_dispose_mapping(irq);
 		}
@@ -725,7 +742,8 @@ static int moxtet_irq_setup(struct moxtet *moxtet)
 
 	moxtet->irq.domain = irq_domain_create_simple(dev_fwnode(moxtet->dev), MOXTET_NIRQS, 0,
 						      &moxtet_irq_domain, moxtet);
-	if (moxtet->irq.domain == NULL) {
+	if (moxtet->irq.domain == NULL) 
+	{
 		dev_err(moxtet->dev, "Could not add IRQ domain\n");
 		return -ENOMEM;
 	}
@@ -772,7 +790,8 @@ static int moxtet_probe(struct spi_device *spi)
 	if (moxtet->dev_irq == -EPROBE_DEFER)
 		return -EPROBE_DEFER;
 
-	if (moxtet->dev_irq <= 0) {
+	if (moxtet->dev_irq <= 0) 
+	{
 		dev_err(moxtet->dev, "No IRQ resource found\n");
 		return -ENXIO;
 	}
@@ -781,7 +800,8 @@ static int moxtet_probe(struct spi_device *spi)
 	if (ret < 0)
 		return ret;
 
-	if (moxtet->irq.exists) {
+	if (moxtet->irq.exists) 
+	{
 		ret = moxtet_irq_setup(moxtet);
 		if (ret < 0)
 			return ret;
