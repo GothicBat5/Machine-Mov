@@ -1,3 +1,6 @@
+package machine;
+
+import com.formdev.flatlaf.FlatIntelliJLaf;
 import javax.imageio.ImageIO;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
@@ -20,20 +23,21 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.prefs.Preferences;
 
 public class Printer extends JFrame {
 
-    //the state dec 
+    //the state dec
     private BufferedImage originalImage;
     private File currentFile;
     private double zoom = 1.0;
     private boolean zoomToFit = true;
-    private int rotation = 0;          // 0, 90, 180, 270
+    private int rotation = 0;
     private boolean flipH = false;
     private boolean flipV = false;
     private boolean darkMode = false;
-    private String scaleMode = "fit";  // "fit", "actual", "custom"
+    private String scaleMode = "fit";
     private double customPercent = 100;
     private boolean printGrayscale = false;
     private PageFormat pageFormat;
@@ -47,12 +51,12 @@ public class Printer extends JFrame {
     private JLabel statusFile, statusDims, statusZoom, statusPrinter;
     private JMenu recentMenu;
     private JToggleButton darkModeBtn;
-    private static final Color ACCENT = new Color(0x2F6FED);
-    private static final Color LIGHT_BG = new Color(0xF4F5F7);
+    private static final Color ACCENT = new Color(0x03B6CE);
+    private static final Color LIGHT_BG = new Color(0xADC4EF);
     private static final Color DARK_BG = new Color(0x1E1F22);
     private static final Color DARK_PANEL = new Color(0x2B2D31);
 
-    public Printer() 
+    public Printer()
     {
         super("Image Printer Pro");
         initLookAndFeel();
@@ -77,37 +81,35 @@ public class Printer extends JFrame {
         setVisible(true);
     }
 
-    private void initLookAndFeel() 
+    private void initLookAndFeel()
     {
         try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) 
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels())
             {
-                if ("Nimbus".equals(info.getName())) 
+                if ("Nimbus".equals(info.getName()))
                 {
                     UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
             }
-        } 
-        catch (Exception ignored) 
+        }
+        catch (Exception ignored)
         {
             //fall back to default
         }
     }
 
-    private JComponent buildCenter() 
+    private JComponent buildCenter()
     {
         previewPanel = new PreviewPanel();
         previewScroll = new JScrollPane(previewPanel);
         previewScroll.getVerticalScrollBar().setUnitIncrement(16);
         previewScroll.setBorder(BorderFactory.createEmptyBorder());
-
-        // Ctrl + mouse wheel to zoom
         previewScroll.addMouseWheelListener(e -> {
-            if (e.isControlDown()) 
+            if (e.isControlDown())
             {
                 if (e.getWheelRotation() < 0) zoomIn(); else zoomOut();
-            } 
+            }
             else {
                 previewScroll.getVerticalScrollBar().setValue(previewScroll.getVerticalScrollBar().getValue() + e.getWheelRotation() * 24);
             }
@@ -115,19 +117,19 @@ public class Printer extends JFrame {
         return previewScroll;
     }
 
-    private JToolBar buildToolBar() 
+    private JToolBar buildToolBar()
     {
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
         bar.setBorder(new EmptyBorder(6, 8, 6, 8));
         bar.add(flatButton("Open", "Open an image (Ctrl+O)", e -> openImageDialog()));
         bar.addSeparator(new Dimension(10, 0));
-        bar.add(flatButton("Rotate \u21BA", "Rotate left", e -> rotateLeft()));
-        bar.add(flatButton("Rotate \u21BB", "Rotate right", e -> rotateRight()));
+        bar.add(flatButton("Rotate ↺", "Rotate left", e -> rotateLeft()));
+        bar.add(flatButton("Rotate ↻", "Rotate right", e -> rotateRight()));
         bar.add(flatButton("Flip H", "Flip horizontal", e -> { flipH = !flipH; refreshPreview(); }));
         bar.add(flatButton("Flip V", "Flip vertical", e -> { flipV = !flipV; refreshPreview(); }));
         bar.addSeparator(new Dimension(10, 0));
-        bar.add(flatButton("\u2212", "Zoom out", e -> zoomOut()));
+        bar.add(flatButton("−", "Zoom out", e -> zoomOut()));
         bar.add(flatButton("Fit", "Fit to window", e -> zoomFit()));
         bar.add(flatButton("100%", "Actual size", e -> zoomActual()));
         bar.add(flatButton("+", "Zoom in", e -> zoomIn()));
@@ -139,14 +141,14 @@ public class Printer extends JFrame {
         bar.add(printerCombo);
         bar.addSeparator(new Dimension(10, 0));
 
-        JButton printBtn = flatButton("Print\u2026", "Print (Ctrl+P)", e -> printImage());
+        JButton printBtn = flatButton("Print…", "Print (Ctrl+P)", e -> printImage());
         printBtn.setBackground(ACCENT);
         printBtn.setForeground(Color.WHITE);
         printBtn.setOpaque(true);
         bar.add(printBtn);
         bar.add(flatButton("Preview", "Print preview", e -> showPrintPreview()));
         bar.add(Box.createHorizontalGlue());
-        darkModeBtn = new JToggleButton("\u263D Dark");
+        darkModeBtn = new JToggleButton("☽ Dark");
         darkModeBtn.addActionListener(e -> {
             darkMode = darkModeBtn.isSelected();
             applyTheme();
@@ -156,7 +158,7 @@ public class Printer extends JFrame {
         return bar;
     }
 
-    private JButton flatButton(String text, String tooltip, ActionListener action) 
+    private JButton flatButton(String text, String tooltip, ActionListener action)
     {
         JButton b = new JButton(text);
         b.setToolTipText(tooltip);
@@ -166,7 +168,7 @@ public class Printer extends JFrame {
         return b;
     }
 
-    private JComponent buildStatusBar() 
+    private JComponent buildStatusBar()
     {
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 4));
         bar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.GRAY));
@@ -181,15 +183,15 @@ public class Printer extends JFrame {
         return bar;
     }
 
-    private JMenuBar buildMenuBar() 
+    private JMenuBar buildMenuBar()
     {
         JMenuBar mb = new JMenuBar();
         JMenu file = new JMenu("File");
-        file.add(menuItem("Open\u2026", KeyEvent.VK_O, e -> openImageDialog()));
+        file.add(menuItem("Open…", KeyEvent.VK_O, e -> openImageDialog()));
         recentMenu = new JMenu("Recent Files");
         rebuildRecentMenu();
         file.add(recentMenu);
-        file.add(menuItem("Export / Save As\u2026", 0, e -> exportImage()));
+        file.add(menuItem("Export / Save As…", 0, e -> exportImage()));
         file.addSeparator();
         file.add(menuItem("Exit", 0, e -> System.exit(0)));
         mb.add(file);
@@ -207,33 +209,33 @@ public class Printer extends JFrame {
         mb.add(view);
 
         JMenu print = new JMenu("Print");
-        print.add(menuItem("Print\u2026", KeyEvent.VK_P, e -> printImage()));
-        print.add(menuItem("Print Preview\u2026", 0, e -> showPrintPreview()));
-        print.add(menuItem("Page Setup\u2026", 0, e -> pageSetup()));
+        print.add(menuItem("Print…", KeyEvent.VK_P, e -> printImage()));
+        print.add(menuItem("Print Preview…", 0, e -> showPrintPreview()));
+        print.add(menuItem("Page Setup…", 0, e -> pageSetup()));
         print.addSeparator();
 
         JMenu scaleMenu = new JMenu("Print Scale");
         ButtonGroup grp = new ButtonGroup();
         JRadioButtonMenuItem fitItem = new JRadioButtonMenuItem("Fit to Page", true);
         JRadioButtonMenuItem actualItem = new JRadioButtonMenuItem("Actual Size (tiles across pages)");
-        JRadioButtonMenuItem customItem = new JRadioButtonMenuItem("Custom %\u2026");
+        JRadioButtonMenuItem customItem = new JRadioButtonMenuItem("Custom %…");
         fitItem.addActionListener(e -> scaleMode = "fit");
         actualItem.addActionListener(e -> scaleMode = "actual");
         customItem.addActionListener(e -> {
             String s = JOptionPane.showInputDialog(this, "Scale percentage:", (int) customPercent);
-            if (s != null) 
+            if (s != null)
             {
                 try {
                     customPercent = Double.parseDouble(s.trim());
                     scaleMode = "custom";
-                } 
-                catch (NumberFormatException ex) 
+                }
+                catch (NumberFormatException ex)
                 {
                     JOptionPane.showMessageDialog(this, "Please enter a valid number.");
                     fitItem.setSelected(true);
                     scaleMode = "fit";
                 }
-            } 
+            }
             else {
                 fitItem.setSelected(true);
             }
@@ -253,35 +255,35 @@ public class Printer extends JFrame {
         mb.add(print);
 
         JMenu help = new JMenu("Help");
-        help.add(menuItem("About", 0, e -> JOptionPane.showMessageDialog(this, "Image Printer Pro\nA modern image viewer & printer built with Java Swing.",
+        help.add(menuItem("About", 0, e -> JOptionPane.showMessageDialog(this, ".",
                 "About", JOptionPane.INFORMATION_MESSAGE)));
         mb.add(help);
 
         return mb;
     }
 
-    private JMenuItem menuItem(String text, int accelKey, ActionListener action) 
+    private JMenuItem menuItem(String text, int accelKey, ActionListener action)
     {
         JMenuItem item = new JMenuItem(text);
-        if (accelKey != 0) 
+        if (accelKey != 0)
         {
             item.setAccelerator(KeyStroke.getKeyStroke(accelKey, InputEvent.CTRL_DOWN_MASK));
         }
         item.addActionListener(action);
         return item;
     }
-    // some themes 
-    private void applyTheme() 
+    // some themes
+    private void applyTheme()
     {
         Color bg = darkMode ? DARK_BG : LIGHT_BG;
         Color panelBg = darkMode ? DARK_PANEL : Color.WHITE;
         Color fg = darkMode ? Color.WHITE : Color.BLACK;
 
         getContentPane().setBackground(bg);
-        previewScroll.getViewport().setBackground(darkMode ? DARK_PANEL : new Color(0xE4E5E7));
-        previewPanel.setBackground(darkMode ? DARK_PANEL : new Color(0xE4E5E7));
+        previewScroll.getViewport().setBackground(darkMode ? DARK_PANEL : new Color(0xC3F5AD));
+        previewPanel.setBackground(darkMode ? DARK_PANEL : new Color(0xD1F8F3));
 
-        for (Component c : new Component[]{statusFile, statusDims, statusZoom, statusPrinter}) 
+        for (Component c : new Component[]{statusFile, statusDims, statusZoom, statusPrinter})
         {
             c.setForeground(fg);
         }
@@ -289,18 +291,18 @@ public class Printer extends JFrame {
         repaint();
     }
 
-    private void loadPrinters() 
+    private void loadPrinters()
     {
         PrintService[] services = PrintServiceLookup.lookupPrintServices(null, null);
         for (PrintService ps : services) printerCombo.addItem(ps);
         PrintService def = PrintServiceLookup.lookupDefaultPrintService();
         if (def != null) printerCombo.setSelectedItem(def);
 
-        printerCombo.setRenderer(new DefaultListCellRenderer() 
+        printerCombo.setRenderer(new DefaultListCellRenderer()
         {
             @Override
-            public Component 
-            getListCellRendererComponent(JList<?> list, Object value, int index, boolean selected, boolean focus) 
+            public Component
+            getListCellRendererComponent(JList<?> list, Object value, int index, boolean selected, boolean focus)
             {
                 super.getListCellRendererComponent(list, value, index, selected, focus);
                 if (value instanceof PrintService) setText(((PrintService) value).getName());
@@ -310,7 +312,7 @@ public class Printer extends JFrame {
         updateStatusBar();
     }
     // the images
-    private void openImageDialog() 
+    private void openImageDialog()
     {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Open Image");
@@ -318,17 +320,17 @@ public class Printer extends JFrame {
                 "png", "jpg", "jpeg", "gif", "bmp", "webp"));
         chooser.setAccessory(new ImagePreviewAccessory(chooser));
 
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) 
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
         {
             openImage(chooser.getSelectedFile());
         }
     }
 
-    private void openImage(File file) 
+    private void openImage(File file)
     {
         try {
             BufferedImage img = ImageIO.read(file);
-            if (img == null) 
+            if (img == null)
             {
                 JOptionPane.showMessageDialog(this, "Unsupported or unreadable image file.");
                 return;
@@ -342,36 +344,36 @@ public class Printer extends JFrame {
             addRecentFile(file.getAbsolutePath());
             refreshPreview();
             updateStatusBar();
-        } 
-        catch (IOException ex) 
+        }
+        catch (IOException ex)
         {
             JOptionPane.showMessageDialog(this, "Could not open image:\n" + ex.getMessage());
         }
     }
 
-    private void installDragAndDrop() 
+    private void installDragAndDrop()
     {
-        setTransferHandler(new TransferHandler() 
+        setTransferHandler(new TransferHandler()
         {
             @Override
-            public boolean canImport(TransferSupport support) 
+            public boolean canImport(TransferSupport support)
             {
                 return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
             }
 
             @Override
-            public boolean importData(TransferSupport support) 
+            public boolean importData(TransferSupport support)
             {
                 try {
                     @SuppressWarnings("unchecked")
                     List<File> files = (List<File>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
-                    if (!files.isEmpty()) 
+                    if (!files.isEmpty())
                     {
-                        openImage(files.get(0));
+                        openImage(files.getFirst());
                         return true;
                     }
-                } 
-                catch (Exception ignored) 
+                }
+                catch (Exception ignored)
                 {
                     // ***
                 }
@@ -380,30 +382,30 @@ public class Printer extends JFrame {
         });
     }
 
-    private void exportImage() 
+    private void exportImage()
     {
-        if (originalImage == null) 
+        if (originalImage == null)
         {
             JOptionPane.showMessageDialog(this, "Load an image first.");
             return;
         }
-        
+
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Export Image");
         chooser.setFileFilter(new FileNameExtensionFilter("PNG Image", "png"));
-        
-        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) 
+
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION)
         {
             File out = chooser.getSelectedFile();
-            if (!out.getName().toLowerCase().endsWith(".png")) 
+            if (!out.getName().toLowerCase().endsWith(".png"))
             {
                 out = new File(out.getParentFile(), out.getName() + ".png");
             }
             try {
-                ImageIO.write(getTransformedImage(), "png", out);
+                ImageIO.write(Objects.requireNonNull(getTransformedImage()), "png", out);
                 JOptionPane.showMessageDialog(this, "Saved to " + out.getAbsolutePath());
-            } 
-            catch (IOException ex) 
+            }
+            catch (IOException ex)
             {
                 JOptionPane.showMessageDialog(this, "Could not save image:\n" + ex.getMessage());
             }
@@ -411,11 +413,11 @@ public class Printer extends JFrame {
     }
 
 
-    private List<String> getRecentFiles() 
+    private List<String> getRecentFiles()
     {
         List<String> result = new ArrayList<>();
-        
-        for (int i = 0; i < MAX_RECENT; i++) 
+
+        for (int i = 0; i < MAX_RECENT; i++)
         {
             String path = PREFS.get("recent" + i, null);
             if (path != null) result.add(path);
@@ -423,14 +425,14 @@ public class Printer extends JFrame {
         return result;
     }
 
-    private void addRecentFile(String path) 
+    private void addRecentFile(String path)
     {
         List<String> recents = getRecentFiles();
         recents.remove(path);
-        recents.add(0, path);
-        while (recents.size() > MAX_RECENT) recents.remove(recents.size() - 1);
-        
-        for (int i = 0; i < MAX_RECENT; i++) 
+        recents.addFirst(path);
+        while (recents.size() > MAX_RECENT) recents.removeLast();
+
+        for (int i = 0; i < MAX_RECENT; i++)
         {
             if (i < recents.size()) PREFS.put("recent" + i, recents.get(i));
             else PREFS.remove("recent" + i);
@@ -438,19 +440,19 @@ public class Printer extends JFrame {
         rebuildRecentMenu();
     }
 
-    private void rebuildRecentMenu() 
+    private void rebuildRecentMenu()
     {
         recentMenu.removeAll();
         List<String> recents = getRecentFiles();
-        
-        if (recents.isEmpty()) 
+
+        if (recents.isEmpty())
         {
             JMenuItem none = new JMenuItem("(none)");
             none.setEnabled(false);
             recentMenu.add(none);
             return;
         }
-        for (String path : recents) 
+        for (String path : recents)
         {
             JMenuItem item = new JMenuItem(path);
             item.addActionListener(e -> { File f = new File(path);
@@ -460,15 +462,42 @@ public class Printer extends JFrame {
             recentMenu.add(item);
         }
     }
-    // movements
-    private void zoomIn() { zoomToFit = false; zoom = Math.min(zoom * 1.25, 16); refreshPreview(); }
-    private void zoomOut() { zoomToFit = false; zoom = Math.max(zoom / 1.25, 0.05); refreshPreview(); }
-    private void zoomFit() { zoomToFit = true; refreshPreview(); }
-    private void zoomActual() { zoomToFit = false; zoom = 1.0; refreshPreview(); }
-    private void rotateLeft() { rotation = (rotation + 270) % 360; refreshPreview(); }
-    private void rotateRight() { rotation = (rotation + 90) % 360; refreshPreview(); }
+    //movements
+    private void zoomIn()
+    {
+        zoomToFit = false;
+        zoom = Math.min(zoom * 1.25, 16);
+        refreshPreview();
+    }
+    private void zoomOut()
+    {
+        zoomToFit = false;
+        zoom = Math.max(zoom / 1.25, 0.05);
+        refreshPreview();
+    }
+    private void zoomFit()
+    {
+        zoomToFit = true;
+        refreshPreview();
+    }
+    private void zoomActual()
+    {
+        zoomToFit = false;
+        zoom = 1.0; refreshPreview
+            ();
+    }
+    private void rotateLeft()
+    {
+        rotation = (rotation + 270) % 360;
+        refreshPreview();
+    }
+    private void rotateRight()
+    {
+        rotation = (rotation + 90) % 360;
+        refreshPreview();
+    }
 
-    private BufferedImage getTransformedImage() 
+    private BufferedImage getTransformedImage()
     {
         if (originalImage == null) return null;
         int w = originalImage.getWidth();
@@ -492,26 +521,26 @@ public class Printer extends JFrame {
         return out;
     }
 
-    private void refreshPreview() 
+    private void refreshPreview()
     {
         previewPanel.setImage(getTransformedImage());
-        if (zoomToFit) 
+        if (zoomToFit)
         {
             previewPanel.setZoomToFit(true, previewScroll.getViewport().getExtentSize());
-        } 
+        }
         else {
             previewPanel.setZoom(zoom);
         }
         updateStatusBar();
     }
 
-    private void updateStatusBar() 
+    private void updateStatusBar()
     {
-        if (originalImage != null) 
+        if (originalImage != null)
         {
             statusFile.setText(currentFile != null ? currentFile.getName() : "Untitled");
             statusDims.setText(originalImage.getWidth() + " x " + originalImage.getHeight() + " px");
-        } 
+        }
         else {
             statusFile.setText("No image loaded");
             statusDims.setText("");
@@ -521,16 +550,16 @@ public class Printer extends JFrame {
         statusPrinter.setText(sel != null ? "Printer: " + sel.getName() : "No printer selected");
     }
     // IO printing
-    private void pageSetup() 
+    private void pageSetup()
     {
         PrinterJob job = PrinterJob.getPrinterJob();
         PageFormat result = job.pageDialog(printAttributes);
         if (result != null) pageFormat = result;
     }
 
-    private void printImage() 
+    private void printImage()
     {
-        if (originalImage == null) 
+        if (originalImage == null)
         {
             JOptionPane.showMessageDialog(this, "Load an image first.");
             return;
@@ -539,8 +568,8 @@ public class Printer extends JFrame {
         PrinterJob job = PrinterJob.getPrinterJob();
         try {
             if (service != null) job.setPrintService(service);
-        } 
-        catch (PrinterException ex) 
+        }
+        catch (PrinterException ex)
         {
             JOptionPane.showMessageDialog(this, ex.getMessage());
             return;
@@ -559,23 +588,23 @@ public class Printer extends JFrame {
         JProgressBar bar = new JProgressBar();
         bar.setIndeterminate(true);
         bar.setStringPainted(true);
-        bar.setString("Sending to " + job.getPrintService().getName() + "\u2026");
+        bar.setString("Sending to " + job.getPrintService().getName() + "…");
         progress.add(bar);
         progress.setSize(320, 70);
         progress.setLocationRelativeTo(this);
         progress.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
-        SwingWorker<Void, Void> worker = new SwingWorker<>() 
+        SwingWorker<Void, Void> worker = new SwingWorker<>()
         {
             String error;
 
             @Override
-            protected Void doInBackground() 
+            protected Void doInBackground()
             {
                 try {
                     job.print(printAttributes);
-                } 
-                catch (PrinterException ex) 
+                }
+                catch (PrinterException ex)
                 {
                     error = ex.getMessage();
                 }
@@ -583,10 +612,10 @@ public class Printer extends JFrame {
             }
 
             @Override
-            protected void done() 
+            protected void done()
             {
                 progress.dispose();
-                if (error != null) 
+                if (error != null)
                 {
                     JOptionPane.showMessageDialog(Printer.this, "Print failed:\n" + error);
                 }
@@ -599,32 +628,32 @@ public class Printer extends JFrame {
         progress.setVisible(true);
     }
 
-    private TiledImagePrintable buildPrintable() 
+    private TiledImagePrintable buildPrintable()
     {
         BufferedImage img = getTransformedImage();
         double scale;
-        boolean tile;
-        
-        switch (scaleMode) 
-        {
-            case "actual":
+
+        boolean tile = switch (scaleMode) {
+            case "actual" -> {
                 scale = 1.0;
-                tile = true;
-                break;
-            case "custom":
+                yield true;
+            }
+            case "custom" -> {
                 scale = customPercent / 100.0;
-                tile = true;
-                break;
-            default:
+                yield true;
+            }
+            default -> {
                 scale = 1.0;
-                tile = false;
-        }
+                yield false;
+            }
+        };
+
         return new TiledImagePrintable(img, scale, tile, printGrayscale);
     }
 
-    private void showPrintPreview() 
+    private void showPrintPreview()
     {
-        if (originalImage == null) 
+        if (originalImage == null)
         {
             JOptionPane.showMessageDialog(this, "Load an image first.");
             return;
@@ -633,28 +662,28 @@ public class Printer extends JFrame {
         new PrintPreviewDialog(this, printable, pageFormat).setVisible(true);
     }
 
-    private static class PreviewPanel extends JPanel 
+    private static class PreviewPanel extends JPanel
     {
         private BufferedImage image;
         private double zoom = 1.0;
 
-        void setImage(BufferedImage img) 
+        void setImage(BufferedImage img)
         {
             this.image = img;
             revalidate();
             repaint();
         }
 
-        void setZoom(double z) 
+        void setZoom(double z)
         {
             this.zoom = z;
             revalidate();
             repaint();
         }
 
-        void setZoomToFit(boolean fit, Dimension viewport) 
+        void setZoomToFit(boolean fit, Dimension viewport)
         {
-            if (image != null && fit && viewport.width > 0 && viewport.height > 0) 
+            if (image != null && fit && viewport.width > 0 && viewport.height > 0)
             {
                 double sx = (viewport.width - 40.0) / image.getWidth();
                 double sy = (viewport.height - 40.0) / image.getHeight();
@@ -664,29 +693,29 @@ public class Printer extends JFrame {
             repaint();
         }
 
-        double getEffectiveZoom() 
-        { 
-            return zoom; 
+        double getEffectiveZoom()
+        {
+            return zoom;
         }
 
         @Override
-        public Dimension getPreferredSize() 
+        public Dimension getPreferredSize()
         {
             if (image == null) return new Dimension(400, 300);
             return new Dimension((int) (image.getWidth() * zoom) + 40, (int) (image.getHeight() * zoom) + 40);
         }
 
         @Override
-        protected void paintComponent(Graphics g) 
+        protected void paintComponent(Graphics g)
         {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-            if (image == null) 
+            if (image == null)
             {
                 g2.setColor(Color.GRAY);
-                g2.drawString("No Image \u2014 open a file or drag one in", getWidth() / 2 - 110, getHeight() / 2);
+                g2.drawString("No Image — open a file or drag one in", getWidth() / 2 - 110, getHeight() / 2);
                 return;
             }
 
@@ -695,10 +724,10 @@ public class Printer extends JFrame {
             int x = Math.max(20, (getWidth() - w) / 2);
             int y = Math.max(20, (getHeight() - h) / 2);
             int cell = 12;
-            
-            for (int cy = 0; cy < h; cy += cell) 
+
+            for (int cy = 0; cy < h; cy += cell)
             {
-                for (int cx = 0; cx < w; cx += cell) 
+                for (int cx = 0; cx < w; cx += cell)
                 {
                     boolean even = ((cx / cell) + (cy / cell)) % 2 == 0;
                     g2.setColor(even ? new Color(0xDDDDDD) : new Color(0xF7F7F7));
@@ -712,12 +741,12 @@ public class Printer extends JFrame {
         }
     }
 
-    private static class ImagePreviewAccessory extends JPanel implements PropertyChangeListener 
+    private static class ImagePreviewAccessory extends JPanel implements PropertyChangeListener
     {
         private ImageIcon icon;
         private final JLabel label = new JLabel();
 
-        ImagePreviewAccessory(JFileChooser chooser) 
+        ImagePreviewAccessory(JFileChooser chooser)
         {
             setPreferredSize(new Dimension(160, 160));
             setBorder(new EmptyBorder(0, 10, 0, 0));
@@ -730,13 +759,13 @@ public class Printer extends JFrame {
         }
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) 
+        public void propertyChange(PropertyChangeEvent evt)
         {
-            if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(evt.getPropertyName())) 
+            if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(evt.getPropertyName()))
             {
                 File file = (File) evt.getNewValue();
-                
-                if (file == null) 
+
+                if (file == null)
                 {
                     label.setIcon(null);
                     label.setText("Preview");
@@ -744,7 +773,7 @@ public class Printer extends JFrame {
                 }
                 try {
                     BufferedImage img = ImageIO.read(file);
-                    if (img == null) 
+                    if (img == null)
                     {
                         label.setIcon(null);
                         label.setText("No preview");
@@ -759,8 +788,8 @@ public class Printer extends JFrame {
                     icon = new ImageIcon(scaled);
                     label.setIcon(icon);
                     label.setText(null);
-                } 
-                catch (Exception ex) 
+                }
+                catch (Exception ex)
                 {
                     label.setIcon(null);
                     label.setText("No preview");
@@ -769,14 +798,14 @@ public class Printer extends JFrame {
         }
     }
 
-    private static class TiledImagePrintable implements Printable 
+    private static class TiledImagePrintable implements Printable
     {
         private final BufferedImage image;
-        private final double scale;    
+        private final double scale;
         private final boolean tile;
         private boolean grayscale;
 
-        TiledImagePrintable(BufferedImage image, double scale, boolean tile, boolean grayscale) 
+        TiledImagePrintable(BufferedImage image, double scale, boolean tile, boolean grayscale)
         {
             this.image = toGrayscaleIfNeeded(image, grayscale, false);
             this.scale = scale;
@@ -784,12 +813,12 @@ public class Printer extends JFrame {
             this.grayscale = grayscale;
         }
 
-        void setGrayscale(boolean g) 
-        { 
-            this.grayscale = g; 
+        void setGrayscale(boolean g)
+        {
+            this.grayscale = g;
         }
 
-        private static BufferedImage toGrayscaleIfNeeded(BufferedImage src, boolean gray, boolean force) 
+        private static BufferedImage toGrayscaleIfNeeded(BufferedImage src, boolean gray, boolean force)
         {
             if (!gray && !force) return src;
             BufferedImage out = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
@@ -799,7 +828,7 @@ public class Printer extends JFrame {
             return out;
         }
 
-        int getPageCount(PageFormat pf) 
+        int getPageCount(PageFormat pf)
         {
             if (!tile) return 1;
             double pw = pf.getImageableWidth();
@@ -812,7 +841,7 @@ public class Printer extends JFrame {
         }
 
         @Override
-        public int print(Graphics graphics, PageFormat pf, int pageIndex) 
+        public int print(Graphics graphics, PageFormat pf, int pageIndex)
         {
             BufferedImage img = grayscale ? toGrayscaleIfNeeded(image, true, true) : image;
             Graphics2D g2 = (Graphics2D) graphics;
@@ -821,7 +850,7 @@ public class Printer extends JFrame {
             double pw = pf.getImageableWidth();
             double ph = pf.getImageableHeight();
 
-            if (!tile) 
+            if (!tile)
             {
                 if (pageIndex > 0) return NO_SUCH_PAGE;
                 double s = Math.min(pw / img.getWidth(), ph / img.getHeight());
@@ -852,7 +881,7 @@ public class Printer extends JFrame {
         }
     }
 
-    private static class PrintPreviewDialog extends JDialog 
+    private static class PrintPreviewDialog extends JDialog
     {
         private int pageIndex = 0;
         private final TiledImagePrintable printable;
@@ -860,16 +889,16 @@ public class Printer extends JFrame {
         private final JLabel pageLabel = new JLabel();
         private final JPanel pageCanvas;
 
-        PrintPreviewDialog(Frame owner, TiledImagePrintable printable, PageFormat pageFormat) 
+        PrintPreviewDialog(Frame owner, TiledImagePrintable printable, PageFormat pageFormat)
         {
             super(owner, "Print Preview", true);
             this.printable = printable;
             this.pageFormat = pageFormat;
 
-            pageCanvas = new JPanel() 
+            pageCanvas = new JPanel()
             {
                 @Override
-                protected void paintComponent(Graphics g) 
+                protected void paintComponent(Graphics g)
                 {
                     super.paintComponent(g);
                     renderPage((Graphics2D) g, getWidth(), getHeight());
@@ -877,19 +906,19 @@ public class Printer extends JFrame {
             };
             pageCanvas.setBackground(new Color(0x999999));
 
-            JButton prev = new JButton("\u25C0 Prev");
-            JButton next = new JButton("Next \u25B6");
-            prev.addActionListener(e -> { 
-                if (pageIndex > 0) 
-                { 
-                    pageIndex--; 
-                    refresh(); 
+            JButton prev = new JButton("◀ Prev");
+            JButton next = new JButton("Next ▶");
+            prev.addActionListener(e -> {
+                if (pageIndex > 0)
+                {
+                    pageIndex--;
+                    refresh();
                 } });
             next.addActionListener(e -> {
-                if (pageIndex < printable.getPageCount(pageFormat) - 1) 
-                { 
-                    pageIndex++; 
-                    refresh(); 
+                if (pageIndex < printable.getPageCount(pageFormat) - 1)
+                {
+                    pageIndex++;
+                    refresh();
                 }
             });
 
@@ -909,14 +938,14 @@ public class Printer extends JFrame {
             refresh();
         }
 
-        private void refresh() 
+        private void refresh()
         {
             int total = printable.getPageCount(pageFormat);
             pageLabel.setText("Page " + (pageIndex + 1) + " of " + total);
             pageCanvas.repaint();
         }
 
-        private void renderPage(Graphics2D g, int w, int h) 
+        private void renderPage(Graphics2D g, int w, int h)
         {
             double pageW = pageFormat.getWidth();
             double pageH = pageFormat.getHeight();
@@ -940,6 +969,13 @@ public class Printer extends JFrame {
 
     public static void main(String[] args)
     {
+        try {
+            FlatIntelliJLaf.setup();
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
         SwingUtilities.invokeLater(Printer::new);
     }
 }
