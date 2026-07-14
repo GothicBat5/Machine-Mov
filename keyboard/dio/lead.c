@@ -59,10 +59,10 @@ static void flush(void) {
   uint8_t *bank_data = (uint8_t*)&led_state[0];
   uint8_t command[1 + 8*3];
   
-  for (int hand=0; hand<2; hand++) 
+  for (int hand = 0; hand < 2; hand++) 
   {
     int addr = I2C_ADDR(hand);
-    for (int bank=0; bank<4; bank++) 
+    for (int bank = 0; bank < 4; bank++) 
     {
       command[0] = TWI_CMD_LED_BASE + bank;
       memcpy(&command[1], bank_data, 8*3);
