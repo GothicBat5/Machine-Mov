@@ -1,1 +1,3 @@
+Some of the symbols I get is from IntelliJ they gave a full access to Java's library for design.
 
+So instead of typing them in a code, you can ask IntelliJ to generate it for you
