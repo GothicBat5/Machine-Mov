@@ -58,7 +58,7 @@ public class Printer extends JFrame {
 
     public Printer()
     {
-        super("Image Printer Pro");
+        super("- PRINTER -- FROM -- ME -");
         initLookAndFeel();
 
         PrinterJob job = PrinterJob.getPrinterJob();
