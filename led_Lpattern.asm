@@ -2,15 +2,15 @@
 .cpu cortex-m3
 .thumb
 
-    .equ RCC_APB2ENR,     0x40021018  /* Clock Enable Register (Example) */
-    .equ GPIOA_MODER,     0x40020000  /* Mode Register (Input/Output) */
-    .equ GPIOA_ODR,       0x40020014  /* Output Data Register (The lights) */
+    .equ RCC_APB2ENR, 0x40021018  /* Clock Enable Register (Example) */
+    .equ GPIOA_MODER, 0x40020000  /* Mode Register (Input/Output) */
+    .equ GPIOA_ODR, 0x40020014  /* Output Data Register (The lights) */
     
     /* --- Light States (Bit masks) --- */
     /* Assuming: Bit 0 = Red, Bit 1 = Yellow, Bit 2 = Green */
-    .equ LIGHT_RED,       0x01
-    .equ LIGHT_YELLOW,    0x02
-    .equ LIGHT_GREEN,     0x04
+    .equ LIGHT_RED, 0x01
+    .equ LIGHT_YELLOW, 0x02
+    .equ LIGHT_GREEN, 0x04
 
     /* Adjust these based on your actual CPU frequency */
     .equ DELAY_RED_MS, 5000        /* 5 seconds */
